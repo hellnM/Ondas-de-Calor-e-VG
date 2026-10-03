@@ -6,5 +6,5 @@ venv/
 .env
 .DS_Store
 
-# Dados brutos do INMET: o notebook usa os parquet de data/processed --- baixar caso não existam.
+# CSVs brutos do INMET: o notebook usa os Parquet de data/processed
 data/raw/
