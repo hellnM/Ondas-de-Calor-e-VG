@@ -1,0 +1,10 @@
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.DS_Store
+
+# Dados brutos do INMET: o notebook usa os parquet de data/processed --- baixar caso não existam.
+data/raw/
