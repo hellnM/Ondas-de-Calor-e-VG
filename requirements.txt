@@ -1,10 +1,12 @@
 numpy
 pandas
 scipy
+scikit-learn
 networkx
 matplotlib
-requests
 tqdm
-ts2vg
+requests
 fastparquet
-notebook
+pymannkendall
+ts2vg
+jupyter

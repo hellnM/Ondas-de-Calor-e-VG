@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Dados brutos (baixados do INMET; regeneráveis pelo notebook)
+data/raw/
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

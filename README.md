@@ -1,105 +1,80 @@
 # Ondas de Calor e Grafos de Visibilidade — Fortaleza (INMET A304)
 
-Trabalho computacional da disciplina de Redes Complexas (Mestrado em Modelagem e Métodos Quantitativos, UFC). A série de temperatura máxima diária da estação A304 (Fortaleza-CE) é convertida em dois grafos de visibilidade, o HVG (*Horizontal Visibility Graph*) e o NVG (*Natural Visibility Graph*). A estrutura das duas redes é medida e os maiores hubs do HVG são comparados com os eventos de onda de calor detectados na mesma série.
+Projeto computacional de análise de séries temporais climáticas usando redes de visibilidade **HVG** (*Horizontal Visibility Graph*) e **NVG** (*Natural Visibility Graph*). O objetivo é descrever a estrutura das redes construídas a partir da temperatura máxima diária da estação A304, em Fortaleza–CE, e investigar sua relação com os eventos de ondas de calor identificados pelos critérios **CTX90pct** e **EHF**.
 
-Notebook: [`ondas_de_calor_vg.ipynb`](ondas_de_calor_vg.ipynb) (Parte I: dados e construção das redes; Parte II: análise estrutural).
+## Notebook principal
 
-## Resultados
+O notebook [`ondas_de_calor_vg.ipynb`](ondas_de_calor_vg.ipynb) reúne as **Partes I, II e III** do trabalho, incluindo a preparação dos dados, a construção e a análise estrutural das redes, a análise de centralidade dos vértices e as verificações de robustez.
 
-Rede construída sobre 5.114 dias (2008–2021):
+## Escopo da análise
 
-| Métrica                  | HVG    | NVG     |
-| ------------------------ | ------ | ------- |
-| Nós (N)                  | 5.114  | 5.114   |
-| Arestas (E)              | 9.287  | 16.862  |
-| Densidade                | 0,00071 | 0,00129 |
-| Componentes conexas      | 1      | 1       |
-| Grau médio ⟨k⟩           | 3,632  | 6,594   |
-| Grau máximo              | 24     | 132     |
-| Agrupamento médio ⟨C⟩    | 0,542  | 0,740   |
-| Transitividade           | 0,306  | 0,330   |
-| Caminho mínimo médio ⟨L⟩ | 16,83  | 5,74    |
-| Diâmetro (D)             | 44     | 11      |
+- **Parte I — Dados e construção das redes:** preparação dos dados do INMET, diagnóstico de falhas, detecção/carregamento dos eventos de calor e construção dos grafos de visibilidade.
+- **Parte II — Análise estrutural:** distribuição de graus, agrupamento, distâncias geodésicas, comparação com modelos de referência e teste da associação entre hubs e ondas de calor.
+- **Parte III — Centralidade dos vértices:** métricas de centralidade, correlações entre métricas, relação com CTX90pct e EHF, análise de AUC, núcleos, assortatividade e alcance temporal.
+- **Robustez:** comparação entre redes com empates e desempatadas, sensibilidade à interpolação, blocos contínuos sem interpolação e análise das métricas anuais.
 
-- **HVG contra o modelo nulo i.i.d.** (Luque et al., 2009): o grau médio observado é 3,632, contra 4 no limite teórico. Para k = 2 a 13, a diferença entre P(k) empírico e P(k) teórico fica entre −0,008 e +0,031.
-- **Cauda de P(k)** (ajuste log-log, k ≥ 5): HVG com α = 5,01 (R² = 0,914) e NVG com α = 2,42 (R² = 0,943).
-- **Hubs e ondas de calor:** entre os 15 maiores hubs do HVG, 1 (6,7%) coincide com um dia de onda de calor (30/05/2010, CTX90pct). O maior hub é 26/11/2013 (32,2 °C, k = 24), um pico isolado que não pertence a nenhum dos dois catálogos de eventos.
+## Recorte e correções relevantes
 
-![Validação de P(k) do HVG](data/plots/parte1_validacao_pk.svg)
+A análise principal utiliza **5.114 dias entre 2008 e 2021**. Foram identificados **13 dias sem temperatura máxima válida em dezembro de 2014**: o bloco de 04 a 15/12/2014 e o dia 17/12/2014, correspondendo a aproximadamente **0,254%** do recorte. A série principal utiliza interpolação linear, e a análise de robustez verifica separadamente o impacto desses valores imputados.
 
-![Distribuição de graus, HVG e NVG](data/plots/parte2_distribuicao_grau_loglog.svg)
+Como a temperatura tem resolução de 0,1 °C e contém valores repetidos, a análise principal emprega desempate com ruído gaussiano de desvio-padrão \(10^{-6}\) e semente 42. As redes com empates também são mantidas para comparação. No HVG, o número de arestas passa de 9.287 na versão com empates para 10.204 após o desempate.
 
-![Distribuição das distâncias geodésicas](data/plots/parte2_distancias_geodesicas.svg)
+## Resultados principais
 
-## Dados
+Nas redes desempatadas, o HVG possui 5.114 nós e 10.204 arestas, e o NVG possui 5.114 nós e 17.278 arestas. Ambas as redes são conexas no recorte analisado. Os graus máximos são 31 no HVG e 134 no NVG.
 
-- **Fonte:** dados históricos horários do [portal do INMET](https://portal.inmet.gov.br/dadoshistoricos), estação A304, anos de 2003 a 2023.
-- **Completude da temperatura máxima diária:** 92,18% (7.021 de 7.617 dias), com 20 blocos de falha listados em `data/processed/diagnostico_gaps_temp_max.csv`. Os anos de 2008 a 2013 e de 2015 a 2021 têm 100% de cobertura; 2014 tem 96,4%.
-- **Recorte:** 2008–2021 (5.114 dias). Os 13 dias sem valor, da falha de dezembro de 2014, foram interpolados.
+O grau médio do HVG desempatado é 3,9906, próximo tanto ao valor de referência finito de 3,9929 quanto à média de 3,9931 obtida para séries embaralhadas (desvio-padrão 0,0013). Portanto, o grau médio isoladamente não permite distinguir a série observada de uma série embaralhada. A distribuição empírica de graus é próxima da distribuição teórica de referência, com a diferença mais evidente em \(k=2\).
 
-## Método
+A associação entre os hubs e os eventos de calor depende da rede utilizada. No HVG desempatado, 5,3% dos hubs coincidem com dias CTX90pct e 9,2% com dias EHF; esses resultados não diferem significativamente das taxas-base nos testes de deslocamento circular. No NVG, as proporções são 23,2% para CTX90pct e 25,0% para EHF, com evidência estatística de associação. Ainda assim, um hub não é, por si só, um indicador meteorológico de onda de calor: o maior hub, em 26/11/2013, não pertence a nenhum dos eventos considerados.
 
-1. **Preparação:** padronização das colunas, conversão de valores inválidos (9999) em `NaN` e agregação das observações horárias em escala diária.
-2. **Detecção de ondas de calor** (percentis de referência calculados em 2003–2017, duração mínima de 3 dias):
-   - **CTX90pct:** temperatura máxima acima do percentil 90 do dia do ano (janela de ±15 dias). 59 eventos, duração média de 4,2 dias.
-   - **EHF (*Excess Heat Factor*):** média de 3 dias da temperatura média menos o percentil 95 de referência (28,23 °C), multiplicada pelo termo de aclimatação. 66 eventos, duração média de 8,2 dias.
-3. **Grafos de visibilidade:** `HorizontalVG` e `NaturalVG` da biblioteca [`ts2vg`](https://github.com/CarlosBergillos/ts2vg). Cada nó guarda a data, a temperatura máxima e as duas marcações de onda de calor.
-4. **Validação do HVG** com a distribuição teórica de uma série i.i.d., P(k) = (1/3)(2/3)^(k−2).
-5. **Análise estrutural** (HVG e NVG com as mesmas métricas): densidade, conectividade, distribuição de graus, transitividade, agrupamento local, distâncias geodésicas e diâmetro.
-6. **Cruzamento físico-topológico:** os 15 maiores hubs do HVG são comparados com os catálogos CTX90pct e EHF. A coincidência é estrita: a data do nó precisa pertencer a um evento, sem tolerância de dias.
+Na Parte III, as métricas de centralidade são avaliadas em relação aos eventos CTX90pct e EHF e comparadas com temperatura e anomalia sazonal. As métricas de centralidade, isoladamente, não superam essas referências. A análise de informação incremental é exploratória, pois as centralidades são calculadas sobre redes construídas a partir da série completa; uma avaliação prospectiva exigiria reconstruir as redes sem os anos usados para teste.
 
-## Estrutura do repositório
+## Figuras
 
-```
-.
-├── ondas_de_calor_vg.ipynb      # notebook completo (Partes I e II)
-├── requirements.txt
-├── data/
-│   ├── processed/
-│   │   ├── fortaleza_horario.parquet
-│   │   ├── fortaleza_diario.parquet
-│   │   ├── fortaleza_ondas_detectadas.parquet
-│   │   ├── diagnostico_gaps_temp_max.csv
-│   │   ├── eventos_ctx90pct.csv
-│   │   ├── eventos_ehf.csv
-│   │   ├── hvg_temp_max_2008_2021.graphml
-│   │   └── nvg_temp_max_2008_2021.graphml
-│   └── plots/                   # figuras geradas pelo notebook (SVG)
-└── README.md
-```
+As células de visualização salvam as figuras em `data/plots/` no formato SVG. Entre os gráficos incluídos estão:
+
+- distribuição de graus e validação de \(P(k)\);
+- agrupamento em função do grau e comparação antes/depois do desempate;
+- comparação de hubs e eventos de calor;
+- correlações, distribuições e AUCs das centralidades;
+- comparação entre série interpolada e blocos contínuos;
+- efeito da interpolação sobre o grau do vértice de 02/12/2014;
+- evolução anual das métricas do NVG;
+- exemplos e visualizações topológicas de janelas temporais.
+
+Os SVGs gerados pelo notebook já estão versionados em `data/plots/`. Para refazê-los, execute o notebook.
 
 ## Como executar
 
-Requer Python 3.10 ou superior.
+### Google Colab
+
+1. Abra `ondas_de_calor_vg.ipynb` no Google Colab.
+2. Em uma célula nova, antes de tudo, instale as bibliotecas que o Colab não traz: `!pip install -q ts2vg pymannkendall fastparquet`. Depois execute as células em ordem.
+3. Se os arquivos processados forem solicitados, carregue os arquivos de dados correspondentes na estrutura `data/processed/` ou permita que as células de preparação os produzam quando o acesso à fonte estiver disponível.
+4. Confira a saída das células e os SVGs gerados em `data/plots/`.
+
+### Execução local
+
+Requer Python 3.10 ou superior. Na raiz do repositório, instale as dependências listadas em `requirements.txt` e abra o notebook:
 
 ```bash
-git clone https://github.com/hellnM/Ondas-de-Calor-e-VG.git
-cd Ondas-de-Calor-e-VG
 python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
+source .venv/bin/activate       # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 jupyter notebook ondas_de_calor_vg.ipynb
 ```
 
-Execute as células em ordem. O notebook usa os caminhos relativos `data/processed` e `data/plots`, por isso deve ser aberto a partir da raiz do repositório.
-
-Os dados já processados estão em `data/processed/`. Enquanto `fortaleza_horario.parquet` e `fortaleza_diario.parquet` existirem, o notebook os carrega e não baixa nada. Para refazer a coleta a partir do INMET, apague esses dois arquivos: o notebook baixa os 21 arquivos anuais (2003–2023) e grava os CSVs brutos em `data/raw/`, que não é versionada.
+O notebook utiliza os diretórios relativos `data/raw`, `data/processed` e `data/plots`.
 
 ## Limitações
 
-- Uma estação (A304) e uma variável (temperatura máxima diária).
-- O cruzamento entre hubs e ondas de calor usa coincidência estrita de data, sem teste estatístico contra o acaso. Com 1 coincidência em 15, o resultado não indica que o grau no HVG funcione como detector de ondas de calor.
-- O modelo nulo existe apenas para o HVG (distribuição teórica i.i.d.). O NVG não tem modelo nulo, e não há séries substitutas (*surrogates*).
-- O grau médio observado no HVG (3,632) fica abaixo do valor teórico (4); o notebook não investiga a causa.
-- O ajuste da cauda usa k ≥ 5 e apenas o R² como medida de qualidade. No HVG a faixa é curta (k máximo = 24).
-- Os percentis de referência (2003–2017) se sobrepõem ao recorte da rede (2008–2021).
-- Os anos de 2022 e 2023 têm cobertura de 89,6% e 75,1% e ficam fora do recorte.
-- Os CSVs brutos do INMET não estão no repositório. Refazer a coleta depende do formato de URL atual do portal do INMET.
+A análise cobre uma estação meteorológica e a temperatura máxima diária. Os resultados topológicos não estabelecem causalidade nem substituem a definição meteorológica de onda de calor. A interpolação pode alterar ligações locais, razão pela qual é examinada separadamente. Os resultados de AUC e de informação incremental não constituem validação prospectiva definitiva.
 
 ## Referências
 
-- Lacasa, L. et al. *From time series to complex networks: The visibility graph.* PNAS 105(13), 2008.
-- Luque, B. et al. *Horizontal visibility graphs: Exact results for random time series.* Physical Review E 80, 046103, 2009.
+- Lacasa, L. et al. “From time series to complex networks: The visibility graph.” *Proceedings of the National Academy of Sciences*, 105(13), 2008.
+- Luque, B. et al. “Horizontal visibility graphs: Exact results for random time series.” *Physical Review E*, 80, 046103, 2009.
+- Perkins, S. E., & Alexander, L. V. “On the measurement of heat waves.” *Journal of Climate*, 26(13), 4500–4517, 2013.
 
 ## Autoria
 
